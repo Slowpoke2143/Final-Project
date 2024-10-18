@@ -11,12 +11,13 @@ UserStorage::~UserStorage()
     }
 }
 
-bool UserStorage::registerUser(const std::string& login, const std::string& password, const std::string& name) // создает пользователя // если может то true если нет то false
+bool UserStorage::registerUser(int num, const std::string& login, const std::string& password, const std::string& name) // создает пользователя // если может то true если нет то false
 {
-    users.push_back(new User(login, password, name));
+    users.push_back(new User(num, login, password, name));
 
     for (int i = 0; i < users.size()-1; i++)
     {
+        
         if (users[i] == users[users.size() - 1])
         {
             users.pop_back();
