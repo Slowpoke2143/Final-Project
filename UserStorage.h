@@ -11,11 +11,12 @@ public:
     UserStorage();
     ~UserStorage();
 
-    bool registerUser(int num, const std::string& login, const std::string& password, const std::string& name);
+    bool registerUser(const std::string& login, const std::string& password, const std::string& name);
 
-    int get_number(const std::string& login, const std::string& password);
-    int get_number(const std::string&& login, const std::string&& password);
+    int get_length();
+    User* get_user(const std::string& login);
+    User* get_user(const std::string&& login);
 
-    const User* operator[](int& i);
-    const User* operator[](int&& i);
+    User* operator[](int& i);
+    User* operator[](int i);
 };

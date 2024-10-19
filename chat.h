@@ -18,8 +18,6 @@ public:
 	void LocalChat(UserStorage &object, int counter);
 	void GlobalChat();
 	void selectUser(UserStorage& object);
-	void selectChat(Chat &object, UserStorage& object2, int counter);
-
-	
+	void selectChat(Chat &object, UserStorage& object2, int counter);	
 };
 

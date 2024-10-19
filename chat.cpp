@@ -20,7 +20,7 @@ void Chat::LocalChat(UserStorage& object, int counter)
 {
 	for(int i = 0; i < counter; i++)
 	{
-		cout << object[i]->get_num() <<"|" << object[i]->get_name() << "|" << endl;
+		//cout << object[i]->get_num() <<"|" << object[i]->get_name() << "|" << endl;
 	}
 	selectUser(object);
 	// .. отправка сообщения
@@ -33,9 +33,9 @@ void  Chat::GlobalChat()
 
 void Chat::selectUser(UserStorage& object)
 {
-	int a;
-	cin >> a;
-	cout <<	object[a]->get_login();
+	int number;
+	cin >> number;
+	//cout <<	object[number]->get_login();
 }
 
 void Chat::selectChat(Chat &object, UserStorage& object2, int counter)

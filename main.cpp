@@ -2,25 +2,41 @@
 #include <string>
 #include "Chat.h"
 #include "User.h"
+#include "LMStorage.h"
 #include "UserStorage.h"
+#include "LocalMessage.h"
 using namespace std;
 
 int main() 
 {
-	string name;
-	string password;
-	string login;
-	UserStorage userstorage;
-	Chat chat;
-	int regUser = 1;
-	static int i = 0;
-	while(i < 2)
-	{
-		cin >> login >> password >> name;
-		userstorage.registerUser(i, login, password, name);
-		cout << "succses" << endl;
-		i++;
-	}
-		chat.selectChat(chat, userstorage, i);
+	setlocale(LC_ALL, "ru");
+	UserStorage userstorage; // классы чисто для взаимодействия
+	LMStorage lmstorage;
+	//Chat chat;
 
+	for (int i = 0; i < 2; i++)
+	{
+		string name;
+		string password;
+		string login;
+		cout << "введи login password name: ";
+		cin >> login >> password >> name;
+		if (!userstorage.registerUser(login, password, name)) // проверка на регистрацию
+		{
+			cout << "такой логин уже есть, так что бывай ;)" << endl;
+			return -1;
+		}
+		cout << "succses" << endl;
+	}
+	LocalMessage lm(userstorage[0], userstorage[1]);
+	string m;
+	cout << "введи сообщение от первого пользователя: ";
+	cin >> m;
+	lm.SendMessage(userstorage[0]->get_login(), m);
+	cout << "введи сообщение от второго пользователя: ";
+	cin >> m;
+	lm.SendMessage(userstorage[1]->get_login(), m);
+	lm.PrintAllMessage();
+	lmstorage.addLM(&lm);
+	cout << "end" << endl;
 }
