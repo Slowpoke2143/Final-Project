@@ -53,30 +53,8 @@ public:
         }
         throw std::runtime_error("Invalid login or password");
     }
-    void logout(const std::string& login) {
-        bool found = false;
-        for (int i = 0; i < numUsers; i++) {
-            if (users[i].login == login) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            throw std::runtime_error("User not found");
-        }
 
-        User* newUsers = new User[numUsers - 1];
-        int j = 0;
-        for (int i = 0; i < numUsers; i++) {
-            if (users[i].login != login) {
-                newUsers[j] = users[i];
-                j++;
-            }
-        }
-        delete[] users;
-        users = newUsers;
-        numUsers--;
-    }
+    
 };
 
 int main() {
@@ -84,7 +62,7 @@ int main() {
 
     std::string command;
     while (true) {
-        std::cout << "Enter command (register, login, send, exit): ";
+        std::cout << "Enter command (register, login, send, exit, logout): ";
         std::cin >> command;
 
         if (command == "register") {
@@ -136,8 +114,7 @@ int main() {
             std::cout << "Enter login: ";
             std::cin >> login;
             try {
-                chat.logout(login);
-                std::cout << "User logged out successfully" << std::endl;
+                std::cout << "You logout!" << std::endl;
             }
             catch (const std::exception& e) {
                 std::cout << "Error: " << e.what() << std::endl;
@@ -150,5 +127,4 @@ int main() {
             std::cout << "Invalid command" << std::endl;
         }
     }
-
     return 0;
