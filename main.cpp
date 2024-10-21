@@ -1,26 +1,154 @@
 #include <iostream>
 #include <string>
-#include "Chat.h"
-#include "User.h"
-#include "UserStorage.h"
-using namespace std;
+#include <exception>
 
-int main() 
-{
-	string name;
-	string password;
-	string login;
-	UserStorage userstorage;
-	Chat chat;
-	int regUser = 1;
-	static int i = 0;
-	while(i < 2)
-	{
-		cin >> login >> password >> name;
-		userstorage.registerUser(i, login, password, name);
-		cout << "succses" << endl;
-		i++;
-	}
-		chat.selectChat(chat, userstorage, i);
+class User {
+public:
+    std::string login;
+    std::string password;
+    std::string name;
 
-}
+    User() = default;
+
+    User(const std::string& login, const std::string& password, const std::string& name)
+        : login(login), password(password), name(name) {}
+
+    ~User() {};
+};
+
+class Chat {
+private:
+    User* users;
+    int numUsers;
+
+public:
+    Chat() : users(nullptr), numUsers(0) {}
+
+    ~Chat() {
+        delete[] users;
+    }
+
+    void registerUser(const std::string& login, const std::string& password, const std::string& name) {
+        for (int i = 0; i < numUsers; i++) {
+            if (users[i].login == login) {
+                throw std::runtime_error("User already exists");
+            }
+        }
+        User* newUsers = new User[numUsers + 1];
+        for (int i = 0; i < numUsers; i++) {
+            newUsers[i] = users[i];
+        }
+        newUsers[numUsers] = User(login, password, name);
+        delete[] users;
+        users = newUsers;
+        numUsers++;
+    }
+
+    void login(const std::string& login, const std::string& password) {
+        for (int i = 0; i < numUsers; i++) {
+            if (users[i].login == login && users[i].password == password) {
+                std::cout << "Welcome, " << users[i].name << "!" << std::endl;
+                return;
+            }
+        }
+        throw std::runtime_error("Invalid login or password");
+    }
+    void logout(const std::string& login) {
+        bool found = false;
+        for (int i = 0; i < numUsers; i++) {
+            if (users[i].login == login) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw std::runtime_error("User not found");
+        }
+
+        User* newUsers = new User[numUsers - 1];
+        int j = 0;
+        for (int i = 0; i < numUsers; i++) {
+            if (users[i].login != login) {
+                newUsers[j] = users[i];
+                j++;
+            }
+        }
+        delete[] users;
+        users = newUsers;
+        numUsers--;
+    }
+};
+
+int main() {
+    Chat chat;
+
+    std::string command;
+    while (true) {
+        std::cout << "Enter command (register, login, send, exit): ";
+        std::cin >> command;
+
+        if (command == "register") {
+            std::string login, password, name;
+            std::cout << "Enter login: ";
+            std::cin >> login;
+            std::cout << "Enter password: ";
+            std::cin >> password;
+            std::cout << "Enter name: ";
+            std::cin >> name;
+            try {
+                chat.registerUser(login, password, name);
+                std::cout << "User registered successfully" << std::endl;
+            }
+            catch (const std::exception& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
+        }
+        else if (command == "login") {
+            std::string login, password;
+            std::cout << "Enter login: ";
+            std::cin >> login;
+            std::cout << "Enter password: ";
+            std::cin >> password;
+            try {
+                chat.login(login, password);
+            }
+            catch (const std::exception& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
+        }
+        else if (command == "send") {
+            std::string from, to, message;
+            std::cout << "Enter sender: ";
+            std::cin >> from;
+            std::cout << "Enter recipient: ";
+            std::cin >> to;
+            std::cout << "Enter message: ";
+            std::cin >> message;
+            try {
+                chat.sendMessage(from, to, message);
+            }
+            catch (const std::exception& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
+        }
+        else if (command == "logout") {
+            std::string login;
+            std::cout << "Enter login: ";
+            std::cin >> login;
+            try {
+                chat.logout(login);
+                std::cout << "User logged out successfully" << std::endl;
+            }
+            catch (const std::exception& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
+        }
+        else if (command == "exit") {
+            break;
+        }
+        else {
+            std::cout << "Invalid command" << std::endl;
+        }
+    }
+
+    return 0;
