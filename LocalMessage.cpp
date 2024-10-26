@@ -1,5 +1,8 @@
 #include"LocalMessage.h"
 #include<iostream>
+LocalMessage::LocalMessage()
+{
+}
 LocalMessage::LocalMessage(User* user1, User* user2) : _user1(user1), _user2(user2){}
 
 LocalMessage::~LocalMessage()

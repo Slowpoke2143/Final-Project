@@ -19,9 +19,11 @@ private:
 public:
 	User* _user1;
 	User* _user2;
-
+	LocalMessage();
 	LocalMessage(User* user1, User* user2);
 	~LocalMessage();
+
+
 
 	void PrintAllMessage();
 	void SendMessage(std::string login, std::string message);

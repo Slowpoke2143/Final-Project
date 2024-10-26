@@ -11,12 +11,16 @@ UserStorage::~UserStorage()
     }
 }
 
-bool UserStorage::registerUser(const std::string& login, const std::string& password, const std::string& name) // создает пользователя // если может то true если нет то false
+bool UserStorage::registerUser(const std::string& login, const std::string& password, const std::string& name, int userValue) // создает пользователя // если может то true если нет то false
 {
-    users.push_back(new User(login, password, name));
+    set_login(login); 
+    set_password(password);
+    set_name(name);
+    set_uniq_value(userValue);
 
+    users.push_back(new User(get_login(), get_password(), get_name(), get_uniq_value()));
     for (int i = 0; i < users.size()-1; i++)
-    {        
+    {    
         if (users[i]->get_login() == users[users.size() - 1]->get_login())
         {
             users.pop_back();
@@ -58,12 +62,22 @@ User* UserStorage::get_user(const std::string&& login)
     
 }
 
-User* UserStorage::operator[](int& i) // возвращает ссылку, но есл нет доступа то nullptr
-{
-    if (i < users.size())
-        return users[i];
-    return nullptr;
+User* UserStorage::login(const std::string& login, const std::string& password) {
+    for (int i = 0; i < users.size(); i++) {
+        if (users[i]->get_login() == login && users[i]->get_password() == password) {
+            std::cout << "Welcome, " << users[i]->get_name() << "!" << std::endl;
+            return users[i];
+        }
+    }
+    throw std::runtime_error("Invalid login or password");
 }
+
+//User* UserStorage::operator[](int& i) // возвращает ссылку, но есл нет доступа то nullptr
+//{
+//    if (i < users.size())
+//        return users[i];
+//    return nullptr;
+//}
 User* UserStorage::operator[](int i) // возвращает ссылку, но есл нет доступа то nullptr
 {
     if (i < users.size())

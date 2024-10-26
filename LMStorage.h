@@ -7,9 +7,9 @@ private:
 	std::vector<LocalMessage*> lms;
 public:
 	LMStorage() = default;
-	~LMStorage() = default;
+	~LMStorage();
 
-	void addLM(LocalMessage* lm);
+	void addLM(User* user1, User* user2);
 
 	std::vector<LocalMessage*> getAllLM(std::string login);
 	LocalMessage* getLM(std::string login1, std::string login2);
