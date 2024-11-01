@@ -1,130 +1,176 @@
 #include <iostream>
 #include <string>
-#include <exception>
+#include "User.h"
+#include "LMStorage.h"
+#include "UserStorage.h"
+#include "LocalMessage.h"
+#include "GlobalMessage.h"
+using namespace std;
 
-class User {
-public:
-    std::string login;
-    std::string password;
-    std::string name;
+int registration(string& name, string& login, string& password, UserStorage& userstorage)
+{
+	while (true)
+	{
+		int branch;
+		cout << "1 - регистрация\n2 - вход\n3 - выход из приложения\nваш ответ: ";
+		cin >> branch;
 
-    User() = default;
+		switch (branch) // регистрвация
+		{
+		case 1:
+			while (true)
+			{
+				cout << "Введите имя нового пользователя: ";
+				cin >> name;
+				cout << "Введите логин нового пользователя: ";
+				cin >> login;
+				cout << "Введите пароль нового пользователя: ";
+				cin >> password;
+				if (userstorage.registerUser(login, password, name))
+				{
+					cout << "Вы зарегестрировались!" << endl;
+					return 1;
+				}
+				else
+					cout << "Мы не смогли вас зарегестрировать :(\nПопробуйте изменить логин" << endl;
+			}
+		case 2:
+			while (true)
+			{
+				cout << "Введите логин: ";
+				cin >> login;
+				cout << "Введите пароль: ";
+				cin >> password;
 
-    User(const std::string& login, const std::string& password, const std::string& name)
-        : login(login), password(password), name(name) {}
+				User* user = userstorage.get_user(login);
+				if (user == nullptr)
+				{
+					cout << "Мы не нашли такого пользователя :(\nМожет просто опечатка\nПопробуй еще? (1 - да  0 - нет): ";
+					bool tryit;
+					cin >> tryit;
+					if (!tryit)
+						break;
+				}
+				else
+				{
+					name = user->get_name();
+					cout << "Вы вошли!" << endl;
+					return 2;
+				}
+			}
+			break;
+		case 3:
+			return 3;
+			break;
 
-    ~User() {};
-};
+		default:
+			cout << "Ты уверен что там такой выбор есть?" << endl;
+			break;
+		}
+	}	
+}
 
-class Chat {
-private:
-    User* users;
-    int numUsers;
+int main()
+{
+	setlocale(LC_ALL, "ru");
+	UserStorage userstorage; // классы чисто для взаимодействия
+	LMStorage lmstorage; // хранилище локальных сообщений
+	GlobalMessage globalMessage(&userstorage); // хранилище глобальных сообщений
+	
+	while (true)
+	{
+		string name;
+		string login;
+		string password;
 
-public:
-    Chat() : users(nullptr), numUsers(0) {}
+		if (registration(name, login, password, userstorage) == 3)
+			return 0; // ебаные баги на 4
+		while (true)
+		{
+			int branch;
+			cout << "\n1 - написать в глобальные сообщение\n2 - написать в личные сообщения\n3 - вывести глобальные сообщения" 
+				<< "\n4 - вывести личное сообщение\n5 - выйти из аккаунта\nваш выбор: ";
+			cin >> branch;
 
-    ~Chat() {
-        delete[] users;
-    }
+		
+			switch (branch)
+			{
+			case 1:
+			{
+				globalMessage.PrintAll();
+				cout << "ваше сообщение: ";
+				string message;
+				cin >> message;
+				globalMessage.SendMessage(login, message);
+				break;
+			}
 
-    void registerUser(const std::string& login, const std::string& password, const std::string& name) {
-        for (int i = 0; i < numUsers; i++) {
-            if (users[i].login == login) {
-                throw std::runtime_error("User already exists");
-            }
-        }
-        User* newUsers = new User[numUsers + 1];
-        for (int i = 0; i < numUsers; i++) {
-            newUsers[i] = users[i];
-        }
-        newUsers[numUsers] = User(login, password, name);
-        delete[] users;
-        users = newUsers;
-        numUsers++;
-    }
+			case 2: // здеся багули )
+			{
+				for (int i = 0; i < userstorage.get_length(); i++) // вывожу всех users для выбора
+				{
+					cout << i << " - " << userstorage[i]->get_name() << endl;
+				}
+				int user_number;
+				while (true) {
+					cout << "ваш выбор: ";
+					cin >> user_number;
+					if (!(user_number < userstorage.get_length()))
+						cout << "вы ввели немного не то, еще разок" << endl;
+					else
+						break;
+				}
+				
+				LocalMessage* lm = lmstorage.getLM(login, userstorage[user_number]->get_login());
+				if (lm != nullptr) { lm->PrintAllMessage(); }
+				else { lmstorage.addLM(userstorage.get_user(login), userstorage[user_number]); }
+				cout << "ваше сообщение: ";
+				string message;
+				cin >> message;
 
-    void login(const std::string& login, const std::string& password) {
-        for (int i = 0; i < numUsers; i++) {
-            if (users[i].login == login && users[i].password == password) {
-                std::cout << "Welcome, " << users[i].name << "!" << std::endl;
-                return;
-            }
-        }
-        throw std::runtime_error("Invalid login or password");
-    }
+				cout << endl;
+				lmstorage.getLM(login, userstorage[user_number]->get_login())->SendMessage(login, message);
+				break;
+			}
 
-    
-};
+			case 3:
+				globalMessage.PrintAll();
+				break;
 
-int main() {
-    Chat chat;
+			case 4: // тута багуязина
+			{
+				for (int i = 0; i < userstorage.get_length(); i++) // вывожу всех users для выбора
+				{
+					cout << i << " - " << userstorage[i]->get_name() << endl;
+				}
+				int user_number;
+				while (true) {
+					cout << "ваш выбор: ";
+					cin >> user_number;
+					if (!(user_number < userstorage.get_length()))
+						cout << "вы ввели немного не то, еще разок" << endl;
+					else
+						break;
+				}
 
-    std::string command;
-    while (true) {
-        std::cout << "Enter command (register, login, send, exit, logout): ";
-        std::cin >> command;
+				cout << endl;
+				LocalMessage* lm = lmstorage.getLM(login, userstorage[user_number]->get_login());
+				if (lm != nullptr) { lm->PrintAllMessage(); }
+				else { cout << "Пока между вами переписки нет" << endl; }
+				break;
+			}
 
-        if (command == "register") {
-            std::string login, password, name;
-            std::cout << "Enter login: ";
-            std::cin >> login;
-            std::cout << "Enter password: ";
-            std::cin >> password;
-            std::cout << "Enter name: ";
-            std::cin >> name;
-            try {
-                chat.registerUser(login, password, name);
-                std::cout << "User registered successfully" << std::endl;
-            }
-            catch (const std::exception& e) {
-                std::cout << "Error: " << e.what() << std::endl;
-            }
-        }
-        else if (command == "login") {
-            std::string login, password;
-            std::cout << "Enter login: ";
-            std::cin >> login;
-            std::cout << "Enter password: ";
-            std::cin >> password;
-            try {
-                chat.login(login, password);
-            }
-            catch (const std::exception& e) {
-                std::cout << "Error: " << e.what() << std::endl;
-            }
-        }
-        else if (command == "send") {
-            std::string from, to, message;
-            std::cout << "Enter sender: ";
-            std::cin >> from;
-            std::cout << "Enter recipient: ";
-            std::cin >> to;
-            std::cout << "Enter message: ";
-            std::cin >> message;
-            try {
-                chat.sendMessage(from, to, message);
-            }
-            catch (const std::exception& e) {
-                std::cout << "Error: " << e.what() << std::endl;
-            }
-        }
-        else if (command == "logout") {
-            std::string login;
-            std::cout << "Enter login: ";
-            std::cin >> login;
-            try {
-                std::cout << "You logout!" << std::endl;
-            }
-            catch (const std::exception& e) {
-                std::cout << "Error: " << e.what() << std::endl;
-            }
-        }
-        else if (command == "exit") {
-            break;
-        }
-        else {
-            std::cout << "Invalid command" << std::endl;
-        }
-    }
-    return 0;
+
+			case 5:
+				login = "";
+				break;
+
+			default:
+				cout << "Давай без опечаток, еще разок ;)" << endl;
+				break;
+			}
+			cout << endl;
+			if (login == "") { break; }
+		}
+	}
+}

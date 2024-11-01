@@ -1,20 +1,25 @@
-#pragma once
+ #pragma once
 #include "User.h"
+#include <string>
 #include<vector>
 #include<iostream>
-class UserStorage {  //HZ 
+class UserStorage : public User {
 private:
     std::vector<User*> users;
-
+    int _userValue = 0;
 public:
     UserStorage();
     ~UserStorage();
 
     bool registerUser(const std::string& login, const std::string& password, const std::string& name);
 
-    int get_number(const std::string& login, const std::string& password);
-    int get_number(const std::string&& login, const std::string&& password);
+    User* login(const std::string& login, const std::string& password);
 
-    const User* operator[](int& i);
-    const User* operator[](int&& i);
+    int get_length();
+    User* get_user(const std::string& login);
+    User* get_user(const std::string&& login);
+
+    void  setUserValue(int userValue) { _userValue = userValue; }
+
+    User* operator[](int i);
 };
